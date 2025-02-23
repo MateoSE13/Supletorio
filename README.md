@@ -1,116 +1,82 @@
-// Backend - NestJS con Prisma
+# Proyecto Expo + NestJS + Prisma
 
-// 1. Instalar NestJS CLI y crear un nuevo proyecto
-// npm i -g @nestjs/cli
-// nest new backend
+Este proyecto es una aplicación móvil desarrollada con Expo (React Native + TypeScript) que consume una API REST construida con NestJS y Prisma. Permite la gestión de instrumentos musicales con funcionalidades CRUD.
 
-// 2. Instalar Prisma y configurar base de datos
-// cd backend
-// npm install prisma @prisma/client
-// npx prisma init --datasource-provider sqlite
+## Backend - NestJS con Prisma
 
-// 3. Definir el modelo de instrumento en prisma/schema.prisma
-model Instrumento {
-  id          Int     @id @default(autoincrement())
-  nombre      String
-  tipo        String
-  precio      Float
-  descripcion String
-}
+### Instalación y configuración
+1. Instalar NestJS CLI y crear un nuevo proyecto:
+   ```sh
+   npm i -g @nestjs/cli
+   nest new backend
+   ```
+2. Instalar Prisma y configurar base de datos:
+   ```sh
+   cd backend
+   npm install prisma @prisma/client
+   npx prisma init --datasource-provider sqlite
+   ```
+3. Definir el modelo de instrumento en `prisma/schema.prisma`:
+   ```prisma
+   model Instrumento {
+     id          Int     @id @default(autoincrement())
+     nombre      String
+     tipo        String
+     precio      Float
+     descripcion String
+   }
+   ```
+4. Ejecutar migraciones:
+   ```sh
+   npx prisma migrate dev --name init
+   ```
+5. Generar módulo, servicio y controlador en NestJS:
+   ```sh
+   nest generate module instrumentos
+   nest generate service instrumentos
+   nest generate controller instrumentos
+   ```
 
-// 4. Ejecutar migraciones
-// npx prisma migrate dev --name init
+### Rutas del API REST
+- `GET /instrumentos` - Obtener todos los instrumentos
+- `GET /instrumentos/:id` - Obtener un instrumento por ID
+- `POST /instrumentos` - Crear un nuevo instrumento
+- `PUT /instrumentos/:id` - Actualizar un instrumento existente
+- `DELETE /instrumentos/:id` - Eliminar un instrumento
 
-// 5. Crear el módulo, servicio y controlador en NestJS
-// nest generate module instrumentos
-// nest generate service instrumentos
-// nest generate controller instrumentos
+## Frontend - Expo con React Native y TypeScript
 
-// 6. Implementar CRUD en el servicio (instrumentos.service.ts)
-@Injectable()
-export class InstrumentosService {
-  constructor(private prisma: PrismaService) {}
-  
-  async getAll() {
-    return this.prisma.instrumento.findMany();
-  }
-  
-  async getOne(id: number) {
-    return this.prisma.instrumento.findUnique({ where: { id } });
-  }
-  
-  async create(data: Prisma.InstrumentoCreateInput) {
-    return this.prisma.instrumento.create({ data });
-  }
-  
-  async update(id: number, data: Prisma.InstrumentoUpdateInput) {
-    return this.prisma.instrumento.update({ where: { id }, data });
-  }
-  
-  async delete(id: number) {
-    return this.prisma.instrumento.delete({ where: { id } });
-  }
-}
+### Instalación y configuración
+1. Crear un nuevo proyecto Expo:
+   ```sh
+   npx create-expo-app frontend -t with-typescript
+   ```
+2. Instalar axios para consumir la API:
+   ```sh
+   cd frontend
+   npm install axios
+   ```
 
-// 7. Implementar las rutas en el controlador (instrumentos.controller.ts)
-@Controller('instrumentos')
-export class InstrumentosController {
-  constructor(private readonly instrumentosService: InstrumentosService) {}
-  
-  @Get()
-  getAll() {
-    return this.instrumentosService.getAll();
-  }
-  
-  @Get(':id')
-  getOne(@Param('id', ParseIntPipe) id: number) {
-    return this.instrumentosService.getOne(id);
-  }
-  
-  @Post()
-  create(@Body() data: Prisma.InstrumentoCreateInput) {
-    return this.instrumentosService.create(data);
-  }
-  
-  @Put(':id')
-  update(@Param('id', ParseIntPipe) id: number, @Body() data: Prisma.InstrumentoUpdateInput) {
-    return this.instrumentosService.update(id, data);
-  }
-  
-  @Delete(':id')
-  delete(@Param('id', ParseIntPipe) id: number) {
-    return this.instrumentosService.delete(id);
-  }
-}
+### Estructura del proyecto
+```
+frontend/
+┣ app/
+┃ ┣ index.tsx        # Pantalla principal (Lista de instrumentos)
+┃ ┣ instrumentos/
+┃ ┃ ┣ [id].tsx       # Pantalla de detalles y edición de un instrumento
+┃ ┃ ┣ nuevo.tsx      # Pantalla para agregar un nuevo instrumento
+┣ components/
+┃ ┣ InstrumentoCard.tsx # Componente para mostrar un instrumento
+┃ ┣ Button.tsx       # Botón reutilizable
+┣ services/
+┃ ┣ api.ts           # Archivo con funciones para comunicarse con el backend
+┣ styles/
+┃ ┣ colors.ts        # Definición de colores
+┃ ┣ typography.ts    # Definición de tipografía
+```
 
-// Frontend - Expo con React Native y TypeScript
-
-// 1. Crear un nuevo proyecto Expo
-// npx create-expo-app frontend -t with-typescript
-
-// 2. Instalar axios para consumir la API
-// cd frontend
-// npm install axios
-
-// 3. Estructura de carpetas del frontend
-// frontend/
-// ┣ app/
-// ┃ ┣ index.tsx        # Pantalla principal (Lista de instrumentos)
-// ┃ ┣ instrumentos/
-// ┃ ┃ ┣ [id].tsx       # Pantalla de detalles y edición de un instrumento
-// ┃ ┃ ┣ nuevo.tsx      # Pantalla para agregar un nuevo instrumento
-// ┣ components/
-// ┃ ┣ InstrumentoCard.tsx # Componente para mostrar un instrumento
-// ┃ ┣ Button.tsx       # Botón reutilizable
-// ┣ services/
-// ┃ ┣ api.ts           # Archivo con funciones para comunicarse con el backend
-// ┣ styles/
-// ┃ ┣ colors.ts        # Definición de colores
-// ┃ ┣ typography.ts    # Definición de tipografía
-
-// 4. Implementar la comunicación con la API en services/api.ts
-import axios from 'axios';
-
+### Implementación de la API en `services/api.ts`
+```typescript
 import axios, { AxiosError } from 'axios';
 
 const API_URL = 'http://192.168.18.125:3000'; // ⚠️ Usa esta IP
@@ -190,3 +156,19 @@ export const deleteInstrumento = async (id: number) => {
     throw new Error('No se pudo eliminar el instrumento');
   }
 };
+
+```
+
+## Cómo ejecutar el proyecto
+### Backend
+```sh
+cd backend
+npm install
+npm run start
+```
+### Frontend
+```sh
+cd frontend
+npm install
+npx expo start
+```
